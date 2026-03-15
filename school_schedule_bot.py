@@ -131,6 +131,60 @@ def generate_schedule_for_grade(grade: int) -> dict:
 
 
 SCHEDULE = {str(grade): generate_schedule_for_grade(grade) for grade in range(1, 12)}
+SCHEDULE = {str(grade): generate_schedule_for_grade(grade) for grade in range(1, 12)}
+
+SCHEDULE["8"] = {
+    "monday": [
+        "Разговоры о важном",
+        "Обществознание",
+        "Алгебра",
+        "Русский язык",
+        "Химия",
+        "Физика",
+        "Литература",
+        "Музыка",
+    ],
+    "tuesday": [
+        "Биология",
+        "История",
+        "Иностранный язык",
+        "Русский язык",
+        "Информатика",
+        "Геометрия",
+        "Математика",
+    ],
+    "wednesday": [
+        "Физика",
+        "География",
+        "ОБЗР",
+        "Химия",
+        "Труд (технология)",
+        "Иностранный язык",
+        "Химия",
+    ],
+    "thursday": [
+        "Иностранный язык",
+        "Литература",
+        "Русский язык",
+        "Биология",
+        "Геометрия",
+        "Математика",
+        "Профориентация",
+    ],
+    "friday": [
+        "Вероятность и статистика",
+        "Алгебра",
+        "Алгебра",
+        "История",
+        "География",
+        "Физкультура",
+        "Физкультура",
+    ],
+    "saturday": []
+}
+
+user_state: dict[int, str] = {}
+admin_mode: dict[int, dict] = {}
 user_state: dict[int, str] = {}
 admin_mode: dict[int, dict] = {}
 
@@ -304,30 +358,46 @@ router = Dispatcher()
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     text = (
+        "╔════════════════════╗\n"
+        "🎓 <b>SCHOOL SCHEDULE BOT</b>\n"
+        "╚════════════════════╝\n\n"
         "🌟 <b>Добро пожаловать в бот школьного расписания</b>\n\n"
         "Здесь можно быстро посмотреть:\n"
-        "• расписание для 1–11 классов\n"
-        "• расписание на сегодня\n"
-        "• текущий урок\n"
-        "• расписание на всю неделю\n"
-        "• уроки учителей\n\n"
-        "Нажми кнопку ниже и выбери нужный раздел 👇"
+        "📚 расписание для 1–11 классов\n"
+        "📅 расписание на сегодня\n"
+        "🕒 текущий урок\n"
+        "🗓 расписание на всю неделю\n"
+        "👨‍🏫 уроки учителей\n\n"
+        "✨ Нажми кнопку ниже и выбери нужный раздел\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "👨‍💻 <b>by. Neznamov Ivan</b>\n"
+        "🚀 <i>School Schedule Bot</i>"
     )
+
     await message.answer(
         text,
         reply_markup=main_menu_kb(is_user_admin=is_admin(message.from_user.id)),
         parse_mode=ParseMode.HTML,
     )
+    
 
 
 @router.callback_query(F.data == "choose_grade")
 async def choose_grade(callback: CallbackQuery):
+    await callback.answer("Открываю классы... 📚")
+
+    await callback.message.edit_text(
+        "⏳ <b>Загрузка списка классов...</b>",
+        parse_mode=ParseMode.HTML,
+    )
+
+    await asyncio.sleep(0.6)
+
     await callback.message.edit_text(
         "🎓 <b>Выбери класс</b>\n\nДоступны классы с 1 по 11.",
         reply_markup=grades_kb(),
         parse_mode=ParseMode.HTML,
     )
-    await callback.answer()
 
 
 @router.callback_query(F.data.startswith("grade:"))
@@ -634,3 +704,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("Бот остановлен")
+
